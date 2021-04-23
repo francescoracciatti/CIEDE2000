@@ -2,10 +2,14 @@
 This module provides CIEDE2000 color difference algorithm.
 """
 
+import logging
 from abc import ABC
 from math import sqrt, atan2, pi, sin, cos, exp
 from typing import Tuple
 
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    level=logging.INFO)
 
 class CIEDE2000(ABC):
     """
@@ -143,8 +147,8 @@ class CIEDE2000(ABC):
         f_H = dH_ / k_H / S_H
         delta_E_00 = sqrt(f_L ** 2 + f_C ** 2 + f_H ** 2 + R_T * f_C * f_H)
 
-        # logging.debug(f"a1_ {a1_}, a2_ {a2_},cC1_ {C1_}, C2_ {C2_}, h1_ {h1_}, h2_ {h2_}, h_avg_' {h_average_deg_}, "
-        #               f"G {G}, T {T}, SL {S_L}, SC {S_C}, SH {S_H}, RT {R_T}")
+        logging.debug(f"a1_ {a1_}, a2_ {a2_}, C1_ {C1_}, C2_ {C2_}, h1_ {h1_}, h2_ {h2_}, h_avg_' {h_average_deg_}, "
+                      f"G {G}, T {T}, SL {S_L}, SC {S_C}, SH {S_H}, RT {R_T}")
 
         return delta_E_00
 
