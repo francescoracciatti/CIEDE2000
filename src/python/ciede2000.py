@@ -11,6 +11,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     datefmt='%m/%d/%Y %H:%M:%S',
                     level=logging.INFO)
 
+
 class CIEDE2000(ABC):
     """
     Provides CIEDE2000 color difference algorithm.
@@ -151,4 +152,3 @@ class CIEDE2000(ABC):
                       f"G {G}, T {T}, SL {S_L}, SC {S_C}, SH {S_H}, RT {R_T}")
 
         return delta_E_00
-
