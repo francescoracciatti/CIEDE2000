@@ -5,7 +5,7 @@ Unit test for cube.py.
 import unittest
 from typing import Dict, Tuple
 
-from src.python.ciede2000 import CIEDE2000
+from src.ciede2000 import CIEDE2000
 
 
 class TestCIEDE2000(unittest.TestCase):
