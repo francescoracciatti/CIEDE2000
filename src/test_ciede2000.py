@@ -1,5 +1,5 @@
 """
-Unit test for cube.py.
+Unit test for CIEDE2000.
 """
 
 import unittest
