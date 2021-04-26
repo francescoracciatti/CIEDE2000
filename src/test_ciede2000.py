@@ -4,6 +4,7 @@ Unit test for CIEDE2000.
 
 import unittest
 from typing import Dict, Tuple
+import pandas as pd
 
 from src.ciede2000 import CIEDE2000
 
@@ -11,47 +12,7 @@ from src.ciede2000 import CIEDE2000
 class TestCIEDE2000(unittest.TestCase):
     """
     Tests CIEDE2000 colors distance.
-
-    See doc/ciede2000-color-difference.pdf, pag 24.
     """
-
-    # Each row contains the Lab color1, the Lab color2, and the expected delta
-    TEST_TO_DATA: Dict[int, Tuple[Tuple[float, float, float], Tuple[float, float, float], float]] = {
-        1: ((50.0000, 2.6772, -79.7751), (50.0000, 0.0000, -82.7485), 2.0425),
-        2: ((50.0000, 3.1571, -77.2803), (50.0000, 0.0000, -82.7485), 2.8615),
-        3: ((50.0000, 2.8361, -74.0200), (50.0000, 0.0000, -82.7485), 3.4412),
-        4: ((50.0000, -1.3802, -84.2814), (50.0000, 0.0000, -82.7485), 1.0000),
-        5: ((50.0000, -1.1848, -84.8006), (50.0000, 0.0000, -82.7485), 1.0000),
-        6: ((50.0000, -0.9009, -85.5211), (50.0000, 0.0000, -82.7485), 1.0000),
-        7: ((50.0000, 0.0000, 0.0000), (50.0000, -1.0000, 2.0000), 2.3669),
-        8: ((50.0000, -1.0000, 2.0000), (50.0000, 0.0000, 0.0000), 2.3669),
-        9: ((50.0000, 2.4900, -0.0010), (50.0000, -2.4900, 0.0009), 7.1792),
-        10: ((50.0000, 2.4900, -0.0010), (50.0000, -2.4900, 0.0010), 7.1792),
-        11: ((50.0000, 2.4900, -0.0010), (50.0000, -2.4900, 0.0011), 7.2195),
-        12: ((50.0000, 2.4900, -0.0010), (50.0000, -2.4900, 0.0012), 7.2195),
-        13: ((50.0000, -0.0010, 2.4900), (50.0000, 0.0009, -2.4900), 4.8045),
-        14: ((50.0000, -0.0010, 2.4900), (50.0000, 0.0010, -2.4900), 4.8045),
-        15: ((50.0000, -0.0010, 2.4900), (50.0000, 0.0011, -2.4900), 4.7461),
-        16: ((50.0000, 2.5000, 0.0000), (50.0000, 0.0000, -2.5000), 4.3065),
-        17: ((50.0000, 2.5000, 0.0000), (73.0000, 25.0000, -18.0000), 27.1492),
-        18: ((50.0000, 2.5000, 0.0000), (61.0000, -5.0000, 29.0000), 22.8977),
-        19: ((50.0000, 2.5000, 0.0000), (56.0000, -27.0000, -3.0000), 31.9030),
-        20: ((50.0000, 2.5000, 0.0000), (58.0000, 24.0000, 15.0000), 19.4535),
-        21: ((50.0000, 2.5000, 0.0000), (50.0000, 3.1736, 0.5854), 1.0000),
-        22: ((50.0000, 2.5000, 0.0000), (50.0000, 3.2972, 0.0000), 1.0000),
-        23: ((50.0000, 2.5000, 0.0000), (50.0000, 1.8634, 0.5757), 1.0000),
-        24: ((50.0000, 2.5000, 0.0000), (50.0000, 3.2592, 0.3350), 1.0000),
-        25: ((60.2574, -34.0099, 36.2677), (60.4626, -34.1751, 39.4387), 1.2644),
-        26: ((63.0109, -31.0961, -5.8663), (62.8187, -29.7946, -4.0864), 1.2630),
-        27: ((61.2901, 3.7196, -5.3901), (61.4292, 2.2480, -4.9620), 1.8731),
-        28: ((35.0831, -44.1164, 3.7933), (35.0232, -40.0716, 1.5901), 1.8645),
-        29: ((22.7233, 20.0904, -46.6940), (23.0331, 14.9730, -42.5619), 2.0373),
-        30: ((36.4612, 47.8580, 18.3852), (36.2715, 50.5065, 21.2231), 1.4146),
-        31: ((90.8027, -2.0831, 1.4410), (91.1528, -1.6435, 0.0447), 1.4441),
-        32: ((90.9257, -0.5406, -0.9208), (88.6381, -0.8985, -0.7239), 1.5381),
-        33: ((6.7747, -0.2908, -2.4247), (5.8714, -0.0985, -2.2286), 0.6377),
-        34: ((2.0776, 0.0795, -1.1350), (0.9033, -0.0636, -0.5514), 0.9082)
-    }
 
     def setUp(self) -> None:
         pass
@@ -61,14 +22,22 @@ class TestCIEDE2000(unittest.TestCase):
 
     def test_ciede2000_distance(self) -> None:
         """
-        Tests CIEDE 2000 distance.
+        Tests CIEDE2000 distance.
+
+        Uses data in data/lab-distances.xlsx, from doc/ciede2000-color-difference.pdf pag 24.
         """
-        start = 1
-        stop = 35
-        for i in range(start, stop):
-            color1 = self.TEST_TO_DATA[i][0]
-            color2 = self.TEST_TO_DATA[i][1]
-            delta = round(CIEDE2000.distance(color1, color2), 4)
-            delta_expected = self.TEST_TO_DATA[i][2]
-            msg = f"pair {i}: Color1 {color1}, Color2 {color2}, Delta {delta} vs DeltaExpected {delta_expected}"
-            self.assertEqual(delta_expected, delta, msg)
+
+        xlsx = pd.read_excel('../data/lab-distances.xlsx', engine='openpyxl')
+        for row in xlsx.index:
+            pair = xlsx['Pair'][row]
+            lab1 = (xlsx['L1'][row], xlsx['a1'][row], xlsx['b1'][row])
+            lab2 = (xlsx['L2'][row], xlsx['a2'][row], xlsx['b2'][row])
+            deltaE_00 = xlsx['DeltaE00'][row]
+            distance = round(CIEDE2000.distance(lab1, lab2), 4)
+            msg = f"Pair {pair}: Lab1 {lab1}, Lab2 {lab2}, distance {distance} vs DeltaE_00 {deltaE_00}"
+            self.assertEqual(deltaE_00, distance, msg)
+
+            # Revers the colors ordering
+            distance = round(CIEDE2000.distance(lab2, lab1), 4)
+            msg = f"Pair {pair} reverse: Lab1 {lab1}, Lab2 {lab2}, distance {distance} vs DeltaE_00 {deltaE_00}"
+            self.assertEqual(deltaE_00, distance, msg)
