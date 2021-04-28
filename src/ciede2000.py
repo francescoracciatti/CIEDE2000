@@ -146,103 +146,41 @@ class CIEDE2000(ABC):
     @staticmethod
     def bgr_to_lab(bgr: Tuple[int, int, int]) -> Tuple[float, float, float]:
         """
-        Gets the LAB configuration from the given BGR configuration.
+        Gets Lab from BGR.
 
         Uses D65 White reference.
 
         :param bgr: the bgr color
         :return: the LAB color
         """
-        # From BGR to XYZ
-        bgr_: List[float] = []
-        for channel in bgr:
-            value = float(channel) / 255
-            if value > 0.04045:
-                bgr_.append(((value + 0.055) / 1.055) ** 2.4)
+        # RGB
+        srgb: Tuple[float, float, float] = (bgr[2] / 255, bgr[1] / 255, bgr[0] / 255)
+
+        # Inverse sRGB companding
+        srgb_: List[float] = []
+        for channel in srgb:
+            if channel > 0.04045:
+                value = ((channel + 0.055) / 1.055) ** 2.4
             else:
-                bgr_.append(value / 12.92)
+                value = channel / 12.92
+            value *= 100
+            srgb_.append(value)
 
-        bgr_ *= 100
-
-        xyz: List[float] = [
-            round(bgr_[2] * 0.4124 + bgr_[1] * 0.3576 + bgr_[0] * 0.1805, 4),
-            round(bgr_[2] * 0.2126 + bgr_[1] * 0.7152 + bgr_[0] * 0.0722, 4),
-            round(bgr_[2] * 0.0193 + bgr_[1] * 0.1192 + bgr_[0] * 0.9505, 4)
-        ]
-
-        # From XYZ to LAB
-        xyz_: List[float] = [
-            xyz[0] / 95.047,
-            xyz[1] / 100.0,
-            xyz[2] / 108.883
-        ]
+        # Applies the transformation matrix with D65 as white reference
+        xyz = [(srgb_[0] * 0.4124 + srgb_[1] * 0.3576 + srgb_[2] * 0.1805) / 95.047,
+               (srgb_[0] * 0.2126 + srgb_[1] * 0.7152 + srgb_[2] * 0.0722) / 100.0,
+               (srgb_[0] * 0.0193 + srgb_[1] * 0.1192 + srgb_[2] * 0.9505) / 108.883]
 
         lab_: List[float] = []
-        for channel in xyz_:
+        for channel in xyz:
             if channel > 0.008856:
-                value = channel ** 1 / 3
+                value = channel ** 1/3
             else:
                 value = (7.787 * channel) + (16 / 116)
             lab_.append(value)
 
-        channel_L = round((116 * lab_[1]) - 16, 4)
-        channel_a = round(500 * (lab_[0] - lab_[1]), 4)
-        channel_b = round(200 * (lab_[1] - lab_[2]), 4)
+        lab = ((116 * lab_[1]) - 16,
+               500 * (lab_[0] - lab_[1]),
+               200 * (lab_[1] - lab_[2]))
 
-        return channel_L, channel_a, channel_b
-
-    @staticmethod
-    def bgr2lab(inputColor):
-        """Convert BGR to LAB."""
-        # Convert BGR to RGB
-        inputColor = (inputColor[2], inputColor[1], inputColor[0])
-
-        num = 0
-        RGB = [0, 0, 0]
-
-        for value in inputColor:
-            value = float(value) / 255
-
-            if value > 0.04045:
-                value = ((value + 0.055) / 1.055) ** 2.4
-            else:
-                value = value / 12.92
-
-            RGB[num] = value * 100
-            num = num + 1
-
-        XYZ = [0, 0, 0, ]
-
-        X = RGB[0] * 0.4124 + RGB[1] * 0.3576 + RGB[2] * 0.1805
-        Y = RGB[0] * 0.2126 + RGB[1] * 0.7152 + RGB[2] * 0.0722
-        Z = RGB[0] * 0.0193 + RGB[1] * 0.1192 + RGB[2] * 0.9505
-        XYZ[0] = round(X, 4)
-        XYZ[1] = round(Y, 4)
-        XYZ[2] = round(Z, 4)
-
-        XYZ[0] = float(XYZ[0]) / 95.047  # ref_X =  95.047    Observer= 2°, Illuminant= D65
-        XYZ[1] = float(XYZ[1]) / 100.0  # ref_Y = 100.000
-        XYZ[2] = float(XYZ[2]) / 108.883  # ref_Z = 108.883
-
-        num = 0
-        for value in XYZ:
-
-            if value > 0.008856:
-                value = value ** (0.3333333333333333)
-            else:
-                value = (7.787 * value) + (16 / 116)
-
-            XYZ[num] = value
-            num = num + 1
-
-        Lab = [0, 0, 0]
-
-        L = (116 * XYZ[1]) - 16
-        a = 500 * (XYZ[0] - XYZ[1])
-        b = 200 * (XYZ[1] - XYZ[2])
-
-        Lab[0] = round(L, 4)
-        Lab[1] = round(a, 4)
-        Lab[2] = round(b, 4)
-
-        return Lab
+        return lab
